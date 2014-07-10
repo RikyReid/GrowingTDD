@@ -6,11 +6,10 @@ import java.awt.event.WindowEvent;
 import javax.swing.SwingUtilities;
 
 import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
 
+import xmpp.XMPPAuction;
 import auctionsniper.ui.MainWindow;
 
 public class Main {
@@ -23,9 +22,6 @@ public class Main {
 	public static final String ITEM_ID_AS_LOGIN = "auction-%s";
 	public static final String AUCTION_ID_FORMAT = ITEM_ID_AS_LOGIN + "@%s/"
 			+ AUCTION_RESOURCE;
-
-	public static final String BID_COMMAND_FORMAT = "SOLVersion 1.1; Command: BID; Price: %d;";
-	public static final String JOIN_COMMAND_FORMAT = "SOLVersion 1.1; Command: JOIN;";
 
 	private MainWindow ui;
 	private Chat notToBEGCd;
@@ -71,9 +67,10 @@ public class Main {
 		this.notToBEGCd = chat;
 
 		Auction auction = new XMPPAuction(chat);
-		chat.addMessageListener(new AuctionMessageTranslator(new AuctionSniper(
-				auction, new SniperStateDisplay())));
-		auction.join();		
+		chat.addMessageListener(new AuctionMessageTranslator(connection
+				.getUser(),
+				new AuctionSniper(auction, new SniperStateDisplay())));
+		auction.join();
 	}
 
 	private void disconnectWhenUICloses(final XMPPConnection connection) {
@@ -84,32 +81,6 @@ public class Main {
 		});
 	}
 
-	public static class XMPPAuction implements Auction {
-		private final Chat chat;
-
-		public XMPPAuction(Chat chat) {
-			this.chat = chat;
-		}
-
-		@Override
-		public void bid(int amount) {
-			sendMessage(String.format(BID_COMMAND_FORMAT, amount));
-		}
-
-		@Override
-		public void join() {
-			sendMessage(JOIN_COMMAND_FORMAT);
-		}
-
-		private void sendMessage(String message) {
-			try {
-				chat.sendMessage(message);
-			} catch (XMPPException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	public class SniperStateDisplay implements SniperListener {
 
 		public void sniperLost() {
@@ -120,13 +91,23 @@ public class Main {
 		public void sniperBidding() {
 			showStatus(SniperState.BIDDING.toString());
 		}
-		
+
 		private void showStatus(final String status) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					ui.showStatus(status);
 				}
 			});
+		}
+
+		@Override
+		public void sniperWinning() {
+			showStatus(SniperState.WINNING.toString());
+		}
+
+		@Override
+		public void sniperWon() {
+			showStatus(SniperState.WON.toString());
 		}
 	}
 }

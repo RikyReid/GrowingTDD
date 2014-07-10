@@ -35,7 +35,15 @@ public class ApplicationRunner {
 	public void hasShownSniperIsBidding() {
 		driver.showsSniperStatus(SniperState.BIDDING.toString());
 	}
-	
+
+	public void showsSniperHasWonAuction() {
+		driver.showsSniperStatus(SniperState.WON.toString());			
+	}
+
+	public void hasShownSniperIsWinning() {
+		driver.showsSniperStatus(SniperState.WINNING.toString());			
+	}
+
 	public void stop() {
 		if (driver != null) {
 			driver.dispose();
