@@ -22,6 +22,13 @@ public class Main {
 	public static final String ITEM_ID_AS_LOGIN = "auction-%s";
 	public static final String AUCTION_ID_FORMAT = ITEM_ID_AS_LOGIN + "@%s/"
 			+ AUCTION_RESOURCE;
+	
+	public static final String BIDDING = "Bidding";
+	public static final String JOINING = "Joining";
+	public static final String WINNING = "Winning";
+	public static final String LOST = "Lost";
+	public static final String WON = "Won";
+
 
 	private MainWindow ui;
 	private Chat notToBEGCd;
@@ -69,7 +76,7 @@ public class Main {
 		Auction auction = new XMPPAuction(chat);
 		chat.addMessageListener(new AuctionMessageTranslator(connection
 				.getUser(),
-				new AuctionSniper(auction, new SniperStateDisplay())));
+				new AuctionSniper(auction, new SniperStateDisplay(), itemId)));
 		auction.join();
 	}
 
@@ -80,16 +87,22 @@ public class Main {
 			}
 		});
 	}
-
+	
 	public class SniperStateDisplay implements SniperListener {
 
 		public void sniperLost() {
-			showStatus(SniperState.LOST.toString());
+			showStatus(LOST);
 		}
 
 		@Override
-		public void sniperBidding() {
-			showStatus(SniperState.BIDDING.toString());
+		public void sniperStateChanged(final SniperSnapshot state) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ui.sniperStatusChanged(state, Main.BIDDING);
+				}
+			});
+
+			showStatus(BIDDING);
 		}
 
 		private void showStatus(final String status) {
@@ -101,13 +114,8 @@ public class Main {
 		}
 
 		@Override
-		public void sniperWinning() {
-			showStatus(SniperState.WINNING.toString());
-		}
-
-		@Override
 		public void sniperWon() {
-			showStatus(SniperState.WON.toString());
+			showStatus(WON);
 		}
 	}
 }

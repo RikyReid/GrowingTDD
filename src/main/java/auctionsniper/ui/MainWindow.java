@@ -1,35 +1,49 @@
 package auctionsniper.ui;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
+import java.awt.Container;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.border.LineBorder;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
-import auctionsniper.SniperState;
+import auctionsniper.SniperSnapshot;
 
 public class MainWindow extends JFrame {
-	public static final String SNIPER_STATUS_NAME = "sniper status";
+	private static final String SNIPERS_TABLE_NAME = "Snipers Table";
 	public static final String MAIN_WINDOW_NAME = "Auction Sniper Main";
-	private final JLabel sniperStatus = createLabel(SniperState.JOINING.toString());
+	public static final String STATUS_JOINING = "Joining";
+	public static final String STATUS_BIDDING = "Bidding";
+	public static final String STATUS_WINNING = "Winning";
+
+	private final SnipersTableModel snipers = new SnipersTableModel();
 
 	public MainWindow() {
 		super("Auction Sniper");
 		setName(MAIN_WINDOW_NAME);
-		add(sniperStatus);
+		fillContentPanel(makeSnipersTable());
 		pack();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 	}
-	
-	private static JLabel createLabel(String initialText) {
-		JLabel result = new JLabel(initialText);
-		result.setName(SNIPER_STATUS_NAME);
-		result.setBorder(new LineBorder(Color.BLACK));
-		return result;
+
+	private void fillContentPanel(JTable snipersTable) {
+		final Container contentPane = getContentPane();
+		contentPane.setLayout(new BorderLayout());
+		contentPane.add(new JScrollPane(snipersTable), BorderLayout.CENTER);
 	}
 	
-	public void showStatus(String status) {
-		sniperStatus.setText(status);
+	private JTable makeSnipersTable() {
+		final JTable snipersTable = new JTable(snipers);
+		snipersTable.setName(SNIPERS_TABLE_NAME);
+		return snipersTable;
+	}
+		
+	public void showStatus(String statusText) {
+		snipers.setStatusText(statusText);
+	}
+	
+	public void sniperStatusChanged(SniperSnapshot state, String statusText) {
+		snipers.sniperStatusChanged(state, statusText);
 	}
 }
