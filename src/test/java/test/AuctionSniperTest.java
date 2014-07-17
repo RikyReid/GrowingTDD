@@ -21,15 +21,15 @@ import auctionsniper.SniperState;
 @RunWith(MockitoJUnitRunner.class)
 public class AuctionSniperTest {
 	private static final String ITEMID = "1";
-	
+
 	@Mock
 	private SniperListener sniperListener;
-	
+
 	@Mock
 	Auction auction;
-	
+
 	private AuctionSniper sniper;
-	
+
 	@Before
 	public void setup() {
 		sniper = new AuctionSniper(auction, sniperListener, ITEMID);
@@ -38,7 +38,7 @@ public class AuctionSniperTest {
 	@Test
 	public void reportsLostWhenAuctionClosesImmediately() {
 		sniper.auctionClosed();
-		verify(sniperListener).sniperLost();
+		expectedSniperState(SniperState.LOST);
 	}
 
 	@Test
@@ -46,57 +46,73 @@ public class AuctionSniperTest {
 		final int price = 1001;
 		final int increment = 25;
 		final int bid = price + increment;
-		
+
 		sniper.currentPrice(price, increment, PriceSource.FromOtherBidder);
-		
-		verify(auction).bid(price + increment);
-		
-		ArgumentCaptor<SniperSnapshot> argument = ArgumentCaptor.forClass(SniperSnapshot.class);
-		verify(sniperListener, atLeastOnce()).sniperStateChanged(argument.capture());
-		assertEquals(SniperState.BIDDING, argument.getValue().state);
+
+		verify(auction).bid(bid);
+
+		expectedToBeBidding();
 	}
-	
+
 	@Test
 	public void reportsIsWinningWhenCurrentPriceComesFromSniper() {
 		sniper.currentPrice(123, 12, PriceSource.FromOtherBidder);
 
-		ArgumentCaptor<SniperSnapshot> argument = ArgumentCaptor.forClass(SniperSnapshot.class);
-		verify(sniperListener, atLeastOnce()).sniperStateChanged(argument.capture());
-		assertEquals(SniperState.BIDDING, argument.getValue().state);
-
+		expectedToBeBidding();
 		sniper.currentPrice(135, 45, PriceSource.FromSniper);
 
-		verify(sniperListener, atLeastOnce()).sniperStateChanged(argument.capture());
-		assertEquals(SniperState.WINNING, argument.getValue().state);
+		expectedToBeWinning();
 	}
-	
+
 	@Test
 	public void reportsLostIfAuctionClosesWhenBidding() {
 		final int price = 123;
 		final int increment = 45;
-		final int bid = price + increment;
-		
+
 		sniper.currentPrice(price, increment, PriceSource.FromOtherBidder);
+
+		expectedToBeBidding();
+
 		sniper.auctionClosed();
-		
-		ArgumentCaptor<SniperSnapshot> argument = ArgumentCaptor.forClass(SniperSnapshot.class);
-		verify(sniperListener, atLeastOnce()).sniperStateChanged(argument.capture());
-		assertEquals(SniperState.BIDDING, argument.getValue().state);
-		verify(sniperListener, atLeastOnce()).sniperLost();
+
+		expectedToHaveLost();
 	}
-	
+
 	@Test
 	public void reportsWonIfAuctionClosesWhenWinning() {
 		final int price = 123;
 		final int increment = 45;
-		
+
 		sniper.currentPrice(price, increment, PriceSource.FromSniper);
 
-		ArgumentCaptor<SniperSnapshot> argument = ArgumentCaptor.forClass(SniperSnapshot.class);
-		verify(sniperListener, atLeastOnce()).sniperStateChanged(argument.capture());
-		assertEquals(SniperState.WINNING, argument.getValue().state);
+		expectedToBeWinning();
 
 		sniper.auctionClosed();
-		verify(sniperListener, atLeastOnce()).sniperWon();
+		expectedToHaveWon();
 	}
+
+	private void expectedToBeBidding() {
+		expectedSniperState(SniperState.BIDDING);
+	}
+
+	private void expectedToBeWinning() {
+		expectedSniperState(SniperState.WINNING);
+	}
+
+	private void expectedToHaveWon() {
+		expectedSniperState(SniperState.WON);
+	}
+
+	private void expectedToHaveLost() {
+		expectedSniperState(SniperState.LOST);
+	}
+
+	private void expectedSniperState(SniperState state) {
+		ArgumentCaptor<SniperSnapshot> argument = ArgumentCaptor
+				.forClass(SniperSnapshot.class);
+		verify(sniperListener, atLeastOnce()).sniperStateChanged(
+				argument.capture());
+		assertEquals(state, argument.getValue().state);
+	}
+
 }

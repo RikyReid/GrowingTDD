@@ -1,0 +1,10 @@
+test\AuctionSniperTest.class
+test\AuctionMessageTranslatorTest.class
+endtoend\auctionsniper\AuctionSniperDriver.class
+endtoend\auctionsniper\ApplicationRunner$1.class
+endtoend\auctionsniper\FakeAuctionServer$SingleMessageListener.class
+endtoend\auctionsniper\AuctionSniperEndToEndTest.class
+test\ui\SnipersTableModelTest.class
+endtoend\auctionsniper\FakeAuctionServer.class
+endtoend\auctionsniper\FakeAuctionServer$1.class
+endtoend\auctionsniper\ApplicationRunner.class

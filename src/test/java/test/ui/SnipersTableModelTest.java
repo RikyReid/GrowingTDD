@@ -1,5 +1,6 @@
 package test.ui;
 
+import static auctionsniper.ui.SnipersTableModel.textFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.Matchers.argThat;
@@ -44,14 +45,14 @@ public class SnipersTableModelTest {
 
 	@Test
 	public void setsSniperValuesInColumns() {
-		model.sniperStatusChanged(new SniperSnapshot("item id", 555, 666, SniperState.BIDDING));
+		model.sniperStateChanged(new SniperSnapshot("item id", 555, 666, SniperState.BIDDING));
 		
 		verify(listener).tableChanged(refEq(new TableModelEvent(model, 0)));
 
 		assertColumnEquals(Column.ITEM_IDENTIFIER, "item id");
 		assertColumnEquals(Column.LAST_PRICE, 555);
 		assertColumnEquals(Column.LAST_BID, 666);
-		assertColumnEquals(Column.SNIPER_STATUS, Main.BIDDING);
+		assertColumnEquals(Column.SNIPER_STATUS, textFor(SniperState.BIDDING));
 	}
 	
 	private void assertColumnEquals(Column column, Object expected) {
