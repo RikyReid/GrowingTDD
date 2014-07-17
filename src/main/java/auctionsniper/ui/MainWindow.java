@@ -15,6 +15,7 @@ public class MainWindow extends JFrame {
 	public static final String STATUS_JOINING = "Joining";
 	public static final String STATUS_BIDDING = "Bidding";
 	public static final String STATUS_WINNING = "Winning";
+	public static final String APPLICATION_TITLE = "Auction Sniper";
 
 	private final SnipersTableModel snipers;
 
