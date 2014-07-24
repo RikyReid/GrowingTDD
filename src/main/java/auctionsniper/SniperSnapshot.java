@@ -29,6 +29,10 @@ public class SniperSnapshot {
 		return new SniperSnapshot(itemId, 0, 0, SniperState.JOINING);
 	}
 	
+	public boolean isForSameItemAs(SniperSnapshot sniperSnapshot) {
+		return itemId.equals(sniperSnapshot.itemId);
+	}
+	
 	@Override
 	public String toString() {
 		return "SniperState [itemId=" + itemId + ", lastPrice=" + lastPrice

@@ -11,7 +11,7 @@ import auctionsniper.SniperSnapshot;
 
 public class MainWindow extends JFrame {
 	private static final String SNIPERS_TABLE_NAME = "Snipers Table";
-	public static final String MAIN_WINDOW_NAME = "Auction Sniper Main";
+//	public static final String MAIN_WINDOW_NAME = "Auction Sniper Main";
 	public static final String STATUS_JOINING = "Joining";
 	public static final String STATUS_BIDDING = "Bidding";
 	public static final String STATUS_WINNING = "Winning";
@@ -22,7 +22,7 @@ public class MainWindow extends JFrame {
 	public MainWindow(SnipersTableModel snipers) {
 		super("Auction Sniper");
 		this.snipers = snipers;
-		setName(MAIN_WINDOW_NAME);
+		setName(APPLICATION_TITLE);
 		fillContentPanel(makeSnipersTable());
 		pack();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

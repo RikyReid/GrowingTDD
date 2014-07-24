@@ -2,6 +2,9 @@ package auctionsniper;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.SwingUtilities;
 
@@ -27,16 +30,8 @@ public class Main {
 	
 	private final SnipersTableModel snipers = new SnipersTableModel();
 
-	
-//	public static final String BIDDING = "Bidding";
-//	public static final String JOINING = "Joining";
-//	public static final String WINNING = "Winning";
-//	public static final String LOST = "Lost";
-//	public static final String WON = "Won";
-
-
 	private MainWindow ui;
-	private Chat notToBEGCd;
+	private Collection<Chat> notToBEGCd = new ArrayList<>();
 
 	public Main() throws Exception {
 		startUserInterface();
@@ -44,9 +39,14 @@ public class Main {
 
 	public static void main(String... args) throws Exception {
 		Main main = new Main();
-		main.joinAuction(
-				connection(args[ARG_HOSTNAME], args[ARG_USERNAME],
-						args[ARG_PASSWORD]), args[ARG_ITEM_ID]);
+		XMPPConnection connection = connection(args[ARG_HOSTNAME], args[ARG_USERNAME],
+				args[ARG_PASSWORD]);
+		main.disconnectWhenUICloses(connection);
+		
+		for (int i = 3; i < args.length; i++) {
+			main.joinAuction(
+					connection, args[i]);
+		}		
 	}
 
 	private static XMPPConnection connection(String hostname, String username,
@@ -72,11 +72,11 @@ public class Main {
 	}
 
 	private void joinAuction(XMPPConnection connection, String itemId)
-			throws XMPPException {
-		disconnectWhenUICloses(connection);
+			throws Exception {
+		safelyAddItemToModel(itemId);
 		final Chat chat = connection.getChatManager().createChat(
 				auctionId(itemId, connection), null);
-		this.notToBEGCd = chat;
+		notToBEGCd.add(chat);
 
 		Auction auction = new XMPPAuction(chat);
 		chat.addMessageListener(new AuctionMessageTranslator(connection
@@ -85,6 +85,14 @@ public class Main {
 		auction.join();
 	}
 
+	private void safelyAddItemToModel(final String itemId) throws Exception {
+		SwingUtilities.invokeAndWait(new Runnable() {
+			public void run() {
+				snipers.addSniperSnapshot(SniperSnapshot.joining(itemId));
+			}
+		});
+	}
+	
 	private void disconnectWhenUICloses(final XMPPConnection connection) {
 		ui.addWindowListener(new WindowAdapter() {
 			public void windowClosed(WindowEvent e) {
