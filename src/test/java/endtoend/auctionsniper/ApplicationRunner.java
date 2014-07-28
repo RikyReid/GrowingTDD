@@ -15,10 +15,34 @@ public class ApplicationRunner {
 	private AuctionSniperDriver driver;
 
 	public void startBiddingIn(final FakeAuctionServer... auctions) {
+		startSniper();
+		for (FakeAuctionServer auction: auctions) {
+			final String itemId = auction.getItemId();
+			driver.startBiddingFor(itemId);
+			driver.showsSniperStatus(itemId, 0, 0, textFor(SniperState.JOINING));
+		}
+//		Thread thread = new Thread("Test Application") {
+//			public void run() {
+//				try {
+//					Main.main(arguments(auctions));
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		};
+//
+//		thread.setDaemon(true);
+//		thread.start();
+//		driver = new AuctionSniperDriver(1000);
+//		driver.hasTitle(MainWindow.APPLICATION_TITLE);
+//		driver.hasColumnTitles();
+	}
+	
+	private void startSniper() {
 		Thread thread = new Thread("Test Application") {
 			public void run() {
 				try {
-					Main.main(arguments(auctions));
+					Main.main(XMPP_HOSTNAME, SNIPER_ID, SNIPER_PASSWORD);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -30,7 +54,6 @@ public class ApplicationRunner {
 		driver = new AuctionSniperDriver(1000);
 		driver.hasTitle(MainWindow.APPLICATION_TITLE);
 		driver.hasColumnTitles();
-		// driver.showsSniperStatus(itemId, 0, 0, JOINING);
 	}
 
 	protected static String[] arguments(FakeAuctionServer... auctions) {

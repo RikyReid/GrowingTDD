@@ -2,7 +2,6 @@ package auctionsniper;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -42,11 +41,31 @@ public class Main {
 		XMPPConnection connection = connection(args[ARG_HOSTNAME], args[ARG_USERNAME],
 				args[ARG_PASSWORD]);
 		main.disconnectWhenUICloses(connection);
+		main.addUserRequestListenerFor(connection);
 		
-		for (int i = 3; i < args.length; i++) {
-			main.joinAuction(
-					connection, args[i]);
-		}		
+//		for (int i = 3; i < args.length; i++) {
+//			main.joinAuction(
+//					connection, args[i]);
+//		}		
+	}
+
+	private void addUserRequestListenerFor(final XMPPConnection connection) {
+		ui.addUserRequestListener( new UserRequestListener() {
+			
+			@Override
+			public void joinAuction(String itemId) {
+				snipers.addSniperSnapshot(SniperSnapshot.joining(itemId));
+				final Chat chat = connection.getChatManager().createChat(
+						auctionId(itemId, connection), null);
+				notToBEGCd.add(chat);
+
+				Auction auction = new XMPPAuction(chat);
+				chat.addMessageListener(new AuctionMessageTranslator(connection
+						.getUser(),
+						new AuctionSniper(auction, new SwingThreadSniperListener(snipers), itemId)));
+				auction.join();
+			}
+		});
 	}
 
 	private static XMPPConnection connection(String hostname, String username,
@@ -71,19 +90,19 @@ public class Main {
 		});
 	}
 
-	private void joinAuction(XMPPConnection connection, String itemId)
-			throws Exception {
-		safelyAddItemToModel(itemId);
-		final Chat chat = connection.getChatManager().createChat(
-				auctionId(itemId, connection), null);
-		notToBEGCd.add(chat);
-
-		Auction auction = new XMPPAuction(chat);
-		chat.addMessageListener(new AuctionMessageTranslator(connection
-				.getUser(),
-				new AuctionSniper(auction, new SwingThreadSniperListener(snipers), itemId)));
-		auction.join();
-	}
+//	private void joinAuction(XMPPConnection connection, String itemId)
+//			throws Exception {
+//		safelyAddItemToModel(itemId);
+//		final Chat chat = connection.getChatManager().createChat(
+//				auctionId(itemId, connection), null);
+//		notToBEGCd.add(chat);
+//
+//		Auction auction = new XMPPAuction(chat);
+//		chat.addMessageListener(new AuctionMessageTranslator(connection
+//				.getUser(),
+//				new AuctionSniper(auction, new SwingThreadSniperListener(snipers), itemId)));
+//		auction.join();
+//	}
 
 	private void safelyAddItemToModel(final String itemId) throws Exception {
 		SwingUtilities.invokeAndWait(new Runnable() {
