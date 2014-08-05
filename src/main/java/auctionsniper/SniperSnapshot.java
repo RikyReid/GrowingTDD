@@ -69,5 +69,9 @@ public class SniperSnapshot {
 			return false;
 		return true;
 	}
+
+	public SniperSnapshot losing(int newLastPrice) {
+		return new SniperSnapshot(itemId, newLastPrice, lastBid, SniperState.LOSING);
+	}
 }
 

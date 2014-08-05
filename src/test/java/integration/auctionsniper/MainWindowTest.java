@@ -1,11 +1,12 @@
 package integration.auctionsniper;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.Test;
 
+import auctionsniper.SniperPortfolio;
 import auctionsniper.UserRequestListener;
+import auctionsniper.UserRequestListener.Item;
 import auctionsniper.ui.MainWindow;
 import auctionsniper.ui.SnipersTableModel;
 
@@ -15,24 +16,25 @@ import endtoend.auctionsniper.AuctionSniperDriver;
 
 public class MainWindowTest {
 	private final SnipersTableModel tableModel = new SnipersTableModel();
-	private final MainWindow mainWindow = new MainWindow(tableModel);
+	private final SniperPortfolio portfolio = new SniperPortfolio();
+	private final MainWindow mainWindow = new MainWindow(portfolio);
 	private final AuctionSniperDriver driver = new AuctionSniperDriver(100);
 
 	@Test
 	public void makeUserRequestWhenJoinButtonClicked() {
-		final ValueMatcherProbe<String> buttonProbe = new ValueMatcherProbe<>(
-				equalTo("an item-id"), "join request");
+		final ValueMatcherProbe<Item> itemProbe = new ValueMatcherProbe<>(
+				equalTo(new Item("an item-id", 789)), "join request");
 		
 		mainWindow.addUserRequestListener(new UserRequestListener() {
 			
 			@Override
-			public void joinAuction(String itemId) {
-				buttonProbe.setReceivedValue(itemId);
+			public void joinAuction(Item item) {
+				itemProbe.setReceivedValue(item);
 				
 			}
 		});
 		
-		driver.startBiddingFor("an item-id");
-		driver.check(buttonProbe);
+		driver.startBiddingFor("an item-id", 789);
+		driver.check(itemProbe);
 	}
 }

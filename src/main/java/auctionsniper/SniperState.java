@@ -23,7 +23,12 @@ public enum SniperState {
 		}
 
 	},
-	LOST, WON;
+	LOSING {
+		@Override
+		public SniperState whenAuctionedClosed() {
+			return LOST;
+		}		
+	}, LOST, WON;
 
 	public SniperState whenAuctionedClosed() {
 		throw new Defect("Auction is already closed");

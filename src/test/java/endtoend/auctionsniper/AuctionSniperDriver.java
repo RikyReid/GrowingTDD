@@ -3,6 +3,8 @@ package endtoend.auctionsniper;
 import static com.objogate.wl.swing.matcher.IterableComponentsMatcher.matching;
 import static com.objogate.wl.swing.matcher.JLabelTextMatcher.withLabelText;
 import static java.lang.String.valueOf;
+import static auctionsniper.ui.MainWindow.NEW_ITEM_ID_NAME;
+import static auctionsniper.ui.MainWindow.NEW_ITEM_STOP_PRICE_NAME;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
@@ -25,23 +27,35 @@ public class AuctionSniperDriver extends JFrameDriver {
 				new AWTEventQueueProber(timeoutMillis, 100));
 	}
 
-	public void startBiddingFor(final String itemId) {
+	public void startBiddingFor(final String itemId, int stopPrice) {
 		itemIdField().replaceAllText(itemId);
+		textField(NEW_ITEM_ID_NAME).replaceAllText(itemId);
+		textField(NEW_ITEM_STOP_PRICE_NAME).replaceAllText(
+				String.valueOf(stopPrice));
 		bidButton().click();
 	}
-	
+
+	public void startBiddingWithStopPrice(String itemId, int stopPrice) {
+		textField(NEW_ITEM_ID_NAME).replaceAllText(itemId);
+		textField(NEW_ITEM_STOP_PRICE_NAME).replaceAllText(
+				String.valueOf(stopPrice));
+		bidButton().click();
+	}
+
 	private JTextFieldDriver itemIdField() {
 		@SuppressWarnings("unchecked")
-		JTextFieldDriver newItemId = new JTextFieldDriver(this, JTextField.class, named(MainWindow.NEW_ITEM_ID_NAME));
+		JTextFieldDriver newItemId = new JTextFieldDriver(this,
+				JTextField.class, named(MainWindow.NEW_ITEM_ID_NAME));
 		newItemId.focusWithMouse();
 		return newItemId;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private JButtonDriver bidButton() {
-		return new JButtonDriver(this, JButton.class, named(MainWindow.JOIN_BUTTON_NAME));
+		return new JButtonDriver(this, JButton.class,
+				named(MainWindow.JOIN_BUTTON_NAME));
 	}
-	
+
 	public void showsSniperStatus(String itemId, int lastPrice, int lastBid,
 			String statusText) {
 		JTableDriver table = new JTableDriver(this);
@@ -56,5 +70,12 @@ public class AuctionSniperDriver extends JFrameDriver {
 		headers.hasHeaders(matching(withLabelText("Item"),
 				withLabelText("Last Price"), withLabelText("Last Bid"),
 				withLabelText("State")));
+	}
+
+	private JTextFieldDriver textField(String fieldName) {
+		JTextFieldDriver newItemId = new JTextFieldDriver(this,
+				JTextField.class, named(fieldName));
+		newItemId.focusWithMouse();
+		return newItemId;
 	}
 }

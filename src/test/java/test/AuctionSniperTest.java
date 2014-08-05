@@ -1,6 +1,6 @@
 package test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
@@ -17,10 +17,12 @@ import auctionsniper.AuctionSniper;
 import auctionsniper.SniperListener;
 import auctionsniper.SniperSnapshot;
 import auctionsniper.SniperState;
+import auctionsniper.UserRequestListener.Item;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuctionSniperTest {
-	private static final String ITEMID = "1";
+	protected static final String ITEM_ID = "item-id";
+	public static final Item ITEM = new Item(ITEM_ID, 1234);
 
 	@Mock
 	private SniperListener sniperListener;
@@ -32,7 +34,8 @@ public class AuctionSniperTest {
 
 	@Before
 	public void setup() {
-		sniper = new AuctionSniper(auction, sniperListener, ITEMID);
+		sniper = new AuctionSniper(auction, ITEM);
+		sniper.addSniperListener(sniperListener);
 	}
 
 	@Test

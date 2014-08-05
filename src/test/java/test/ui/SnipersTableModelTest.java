@@ -1,14 +1,13 @@
 package test.ui;
 
-import static auctionsniper.ui.SnipersTableModel.textFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Matchers.argThat;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -17,22 +16,24 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import auctionsniper.AuctionSniper;
 import auctionsniper.SniperSnapshot;
-import auctionsniper.SniperState;
+import auctionsniper.UserRequestListener.Item;
 import auctionsniper.ui.Column;
 import auctionsniper.ui.SnipersTableModel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SnipersTableModelTest {
+	 private static final String ITEM_ID = "item 0";
 	@Mock
 	TableModelListener listener;
 
 	private SnipersTableModel model = new SnipersTableModel();
-
+	private final AuctionSniper sniper = new AuctionSniper(null, new Item(ITEM_ID, 234)); 
+	
 	@Before
 	public void attachModelListener() {
 		model.addTableModelListener(listener);
@@ -45,10 +46,9 @@ public class SnipersTableModelTest {
 
 	@Test
 	public void setsSniperValuesInColumns() {
-		SniperSnapshot joining = SniperSnapshot.joining("item123");
-		SniperSnapshot bidding = joining.bidding(555, 666);
+		SniperSnapshot bidding = sniper.getSnapshot().bidding(555, 666);
 
-		model.addSniperSnapshot(joining);
+		model.sniperAdded(sniper);
 		model.sniperStateChanged(bidding);
 
 		verify(listener).tableChanged(argThat(anyInsertionEvent()));
@@ -66,14 +66,13 @@ public class SnipersTableModelTest {
 
 	@Test
 	public void notifiesListenerWhenAddingASniper() {
-		SniperSnapshot joining = SniperSnapshot.joining("item123");
 		assertEquals(0, model.getRowCount());
 
-		model.addSniperSnapshot(joining);
+		model.sniperAdded(sniper);
 		verify(listener).tableChanged(refEq(insertRowAtEvent(0)));
 
 		assertEquals(1, model.getRowCount());
-		assertRowMatchesSnapshot(0, joining);
+		assertRowMatchesSnapshot(0, SniperSnapshot.joining(ITEM_ID));
 
 	}
 
@@ -82,10 +81,6 @@ public class SnipersTableModelTest {
 				TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
 	}
 
-//	private TableModelEvent anyInsertEvent(int row) {
-//		return new TableModelEvent(model, row, row,
-//				TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
-//	}
 
 	Matcher<TableModelEvent> anyInsertionEvent() {
 		return hasProperty("type", equalTo(TableModelEvent.INSERT));
@@ -94,12 +89,6 @@ public class SnipersTableModelTest {
 	private Matcher<TableModelEvent> aChangeInRow(int row) {
 		return samePropertyValuesAs(new TableModelEvent(model, row));
 	}
-
-//	private void assertColumnEquals(Column column, Object expected) {
-//		final int rowIndex = 0;
-//		final int columnIndex = column.ordinal();
-//		assertEquals(expected, model.getValueAt(rowIndex, columnIndex));
-//	}
 
 	private void assertRowMatchesSnapshot(int row, SniperSnapshot snapshot) {
 		assertEquals(snapshot.itemId, cellValue(row, Column.ITEM_IDENTIFIER));
